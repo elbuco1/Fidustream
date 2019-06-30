@@ -1,7 +1,7 @@
 Fidustream
 ==========
 
-*A Symfony project created on June 9, 2017, 10:31 am.*
+*A video streaming platform.*
 
 ## Installation
 #### Dépendances
