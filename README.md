@@ -3,158 +3,6 @@ Fidustream
 
 *A video streaming platform.*
 
-## Installation
-#### Dépendances
-* Environnement système:
-    * apache2
-    * git
-    * php      (>=5.4)
-    * mysql
-    * python   (>=3.0)
-    * pip
-* Framework:
-    * symfony  (>=3.3)
-    * composer (gestionnaire de dépendances pour symfony)
-* Utilitaires:
-    * ffmpeg   (gestion de conversion vidéo, voir la partie:"Conversion d'une vidéo")
-    * ffprobe  (gestion de métadonnées de vidéo/inclus dans ffmpeg)
-    * rabbit   (gestion de file de message pour communication entre symfony et le gestionnaire de conversion vidéo)
-* Bibliothèques python:
-    * ffmpy3   (bibliothèque python pour ffmpeg)
-    * ffprobe3 (bibliothèque python pour ffprobe)
-    * pika     (bibliothèque python pour rabbit)
-#### Guide d'installation Centos 7
-yum update
-##### apache2
-* yum -y install httpd
-##### git
-* yum install git
-##### php (l'exemple est pour php 7)
-* rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
-* rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-* yum install php70w
-* yum install php70w-bcmath.x86_64  php70w-mbstring php70w-xml php70w-posix php70w-pdo.x86_64
-##### mysql (tutoriel: https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-centos-7)
-* wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
-* rpm -ivh mysql57-community-release-el7-11.noarch.rpm
-* yum install mysql-server (suivre les instructions)
-* systemctl start mysqld  (pour lancer mysql)
-###### Si il est impossible de se connecter avec le mot de passe entré pendant l'installation, suivre les instructions suivantes:
-* grep 'temporary password' /var/log/mysqld.log (un mot de passe temporaire a été généré par mysql)
-* mysql -u root -p (entrer le mot de passe temporaire pour se connecter)
-* SET PASSWORD = PASSWORD("mot de passe temporaire); (modifier le mot de passe temporaire en le remplaçant par lui-même)
-* uninstall plugin validate_password; (désactiver le plugin de validation de mot de passe)
-* SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root'); (mettre le mot de passe souhaité)
-##### phpmyadmin (optionnel, permet l'administration des bases mysql)
-* yum -y install epel-release
-* yum install phpmyadmin (login:root/password:root)
-##### python (l'exemple est pour 3.6)
-* yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-* yum -y install python36u
-##### pip
-* yum -y install python36u-pip
-##### Télécharger les sources
-* Mettre le dossier des sources du projet dans le répertoire /var/www/html
-##### composer
-* su (se mettre en super-utilisateur)
-* curl -sS https://getcomposer.org/installer | php (télécharge un fichier composer.phar)
-##### ffmpeg
-*Le projet contient une version compilée de ffmpeg qui inclut les librairies(non-inclues dans le package ffmpeg de base) utiles au projet*
-* Se placer dans le répertoire du projet
-* tar zxvf ffmpeg_build.tar.gz -C ~ (décompresser ffmpeg dans le répertoire home)
-
-* ln -s -t /bin ~/ffmpeg_build/bin/ffmpeg(créer des liens symboliques vers les exécutables)
-* ln -s -t /bin ~/ffmpeg_build/bin/ffprobe(créer des liens symboliques vers les exécutables)
-* ln -s -t /bin ~/ffmpeg_build/bin/ffserver(créer des liens symboliques vers les exécutables)
-##### rabbitmq
-* wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.10/rabbitmq-server-3.6.10-1.el7.noarch.rpm
-* rpm --import https://www.rabbitmq.com/rabbitmq-release-signing-key.asc
-* yum install rabbitmq-server-3.6.10-1.el7.noarch.rpm
-* chkconfig rabbitmq-server on (permettre à rabbit de se lancer automatiquement au démarrage)
-* /sbin/service rabbitmq-server start (démarrer rabbit)
-##### rabbitmq_management (optionnel, permet l'administration des files rabbit)
-* rabbitmq-plugins enable rabbitmq_management  (login:guest/password:guest)
-##### ffmpy3
-* pip3.6 install  ffmpy3
-##### ffprobe3
-* pip3.6 install ffprobe3
-##### pika
-* pip3.6 install pika
-##### Création de la base de donnée
-* php bin/console doctrine:database:create
-##### Création des tables en base de donnée
-* php bin/console doctrine:schema:update --dump-sql (voir les requêtes qui vont être envoyées)
-* php bin/console doctrine:schema:update --force (lancer les requêtes)
-
-##### Charger des utilisateurs de test en base de donnée
-* php bin/console doctrine:fixtures:load
-
-##### Enlever les limites d'upload pour php (pour le dev)
-* Ouvrir le fichier /etc/php.ini
-* Mettre la valeur de post_max_size à 0
-* Mettre la valeur de upload_max_filesize à 0
-
-##### Mettre à jour les dépendances
-* Se placer dans le répertoire du projet /var/www/html/Fidustream
-* Lancer la commande: 
-    * php [path/to/composer.phar] update
-
-##### Droits sur le dossier var du projet (peut nécessiter d'installer setfacl) (un chmod sur le dossier var marche aussi)
-HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
-sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
-sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
-
-
-#### Bundles
-*Dans Symfony, on peut utiliser des blocs déjà existants: les Bundles.
-Les bundles utilisés par le projet sont:*
-* fos/user-bundle              (gestion avancée des utilisateurs)
-* doctrine/doctrine-bundle     (gestion des entités )
-* doctrine/orm                 (gestion des relations base de donnée/entité)
-* twig/twig                    (moteur de templates)
-* php-amqplib/rabbitmq-bundle  (interaction avec rabbit pour les files de message)
-
-*L'ajout de nouveaux bundles se fait dans le fichier composer.json à la racine du projet. On ajoute la ligne du bundle dans le champ require.  
-Exemple: "doctrine/doctrine-fixtures-bundle": "~2.3",  
- Le bundle est ensuite autorisé dans le fichier app/config/AppKernel.php. Dans le tableau $bundles.  
- Exemple: new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),*  
-
-#### Composants symfony
-*Symfony propose des composants déjà existants:*
-* symfony/workflow         (gestion de workflow et de cycle de vie d'une entité)
-* symfony/filesystem       (gestion des fichiers et dossiers du serveur)
-* symfony/event-dispatcher (gestion des évènements pour symfony)
-
-*L'ajout de nouveaux bundles se fait dans le fichier composer.json à la racine du projet. On ajoute la ligne du bundle dans le champ require.  
-Exemple: "symfony/workflow ": "~2.3",*
-
-Pour mettre à jour les dépendances, après ajout dans les fichiers composer.json et app/config/AppKernel.php on utilise la commande update de composer. Pour cela on se place à la racine du projet et on exécute la commande suivante:
-* php [path/to/composer.phar] update
-
-### Manuellement
-Pour faire marcher l'application, il faut installer toutes les dépendances (partie "Dépendances"), télécharger le projet, se placer à la racine et mettre à jour les dépendances avec la commande:
-* php [path/to/composer.phar] update
-
-### Lancer l'application
-Se placer à la racine du projet, ouvrir un terminal et lancer le serveur avec la commande suivante:  
-* php bin/console server:start  
-* Lancer les processus python de conversion vidéo dans différents terminaux (on peut lancer plusieurs fois le même processus en parallèle, la gestion des tâches est gérées):
-    * python transcoding/transcodingReceiver.py (dans notre exemple, on utilisera la commande python3.6 transcoding/transcodingReceiver.py puisqu'on a installé la version 3.6)
-    * python transcoding/resolutionReceiver.py
-    * php bin/console rabbitmq:consumer workflow_consumer
-    * php bin/console rabbitmq:consumer resolution_consumer
-* Lancer le serveur Symfony:
-    * php bin/console server:start
-* Puis se rendre à l'adresse:   
-    * [adresse du serveur][port du serveur]/video
-* Connectez-vous avec l'un des utilisateurs suivant (pour plus de détails sur les droits, voir la section: "Authentification")
-    * login: admin/ password: admin
-    * login: contributor1/ password: contributor1
-    * login: contributor2/ password: contributor2
-    * login: moderator1/ password: moderator1
-    * login: moderator2/ password: moderator2
-    * login: viewer/ password: viewer
-
 ## Fonctionnalités de l'application
 Dans cette partie sont décrites les principales fonctionnalités implémentées dans l'application.
 ### Cycle de vie d'une vidéo
@@ -321,6 +169,8 @@ Dans le cadre du processus de validation, il a trois possibilités:
 * Demander au contributeur de modifier les méta-données en lui laissant en message.
 * Valider la vidéo
 Il peut ensuite retourner à la liste des vidéos à valider ou à l'accueil. 
+
+
 ## Explication succinte de la hiérarchie du projet
 ### Configuration du projet
     * app/AppKernel.php:
@@ -498,3 +348,158 @@ sudo apt-get update
 HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
 sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
 sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
+
+
+
+
+## Installation
+#### Dépendances
+* Environnement système:
+    * apache2
+    * git
+    * php      (>=5.4)
+    * mysql
+    * python   (>=3.0)
+    * pip
+* Framework:
+    * symfony  (>=3.3)
+    * composer (gestionnaire de dépendances pour symfony)
+* Utilitaires:
+    * ffmpeg   (gestion de conversion vidéo, voir la partie:"Conversion d'une vidéo")
+    * ffprobe  (gestion de métadonnées de vidéo/inclus dans ffmpeg)
+    * rabbit   (gestion de file de message pour communication entre symfony et le gestionnaire de conversion vidéo)
+* Bibliothèques python:
+    * ffmpy3   (bibliothèque python pour ffmpeg)
+    * ffprobe3 (bibliothèque python pour ffprobe)
+    * pika     (bibliothèque python pour rabbit)
+#### Guide d'installation Centos 7
+yum update
+##### apache2
+* yum -y install httpd
+##### git
+* yum install git
+##### php (l'exemple est pour php 7)
+* rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
+* rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+* yum install php70w
+* yum install php70w-bcmath.x86_64  php70w-mbstring php70w-xml php70w-posix php70w-pdo.x86_64
+##### mysql (tutoriel: https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-centos-7)
+* wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+* rpm -ivh mysql57-community-release-el7-11.noarch.rpm
+* yum install mysql-server (suivre les instructions)
+* systemctl start mysqld  (pour lancer mysql)
+###### Si il est impossible de se connecter avec le mot de passe entré pendant l'installation, suivre les instructions suivantes:
+* grep 'temporary password' /var/log/mysqld.log (un mot de passe temporaire a été généré par mysql)
+* mysql -u root -p (entrer le mot de passe temporaire pour se connecter)
+* SET PASSWORD = PASSWORD("mot de passe temporaire); (modifier le mot de passe temporaire en le remplaçant par lui-même)
+* uninstall plugin validate_password; (désactiver le plugin de validation de mot de passe)
+* SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root'); (mettre le mot de passe souhaité)
+##### phpmyadmin (optionnel, permet l'administration des bases mysql)
+* yum -y install epel-release
+* yum install phpmyadmin (login:root/password:root)
+##### python (l'exemple est pour 3.6)
+* yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+* yum -y install python36u
+##### pip
+* yum -y install python36u-pip
+##### Télécharger les sources
+* Mettre le dossier des sources du projet dans le répertoire /var/www/html
+##### composer
+* su (se mettre en super-utilisateur)
+* curl -sS https://getcomposer.org/installer | php (télécharge un fichier composer.phar)
+##### ffmpeg
+*Le projet contient une version compilée de ffmpeg qui inclut les librairies(non-inclues dans le package ffmpeg de base) utiles au projet*
+* Se placer dans le répertoire du projet
+* tar zxvf ffmpeg_build.tar.gz -C ~ (décompresser ffmpeg dans le répertoire home)
+
+* ln -s -t /bin ~/ffmpeg_build/bin/ffmpeg(créer des liens symboliques vers les exécutables)
+* ln -s -t /bin ~/ffmpeg_build/bin/ffprobe(créer des liens symboliques vers les exécutables)
+* ln -s -t /bin ~/ffmpeg_build/bin/ffserver(créer des liens symboliques vers les exécutables)
+##### rabbitmq
+* wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.10/rabbitmq-server-3.6.10-1.el7.noarch.rpm
+* rpm --import https://www.rabbitmq.com/rabbitmq-release-signing-key.asc
+* yum install rabbitmq-server-3.6.10-1.el7.noarch.rpm
+* chkconfig rabbitmq-server on (permettre à rabbit de se lancer automatiquement au démarrage)
+* /sbin/service rabbitmq-server start (démarrer rabbit)
+##### rabbitmq_management (optionnel, permet l'administration des files rabbit)
+* rabbitmq-plugins enable rabbitmq_management  (login:guest/password:guest)
+##### ffmpy3
+* pip3.6 install  ffmpy3
+##### ffprobe3
+* pip3.6 install ffprobe3
+##### pika
+* pip3.6 install pika
+##### Création de la base de donnée
+* php bin/console doctrine:database:create
+##### Création des tables en base de donnée
+* php bin/console doctrine:schema:update --dump-sql (voir les requêtes qui vont être envoyées)
+* php bin/console doctrine:schema:update --force (lancer les requêtes)
+
+##### Charger des utilisateurs de test en base de donnée
+* php bin/console doctrine:fixtures:load
+
+##### Enlever les limites d'upload pour php (pour le dev)
+* Ouvrir le fichier /etc/php.ini
+* Mettre la valeur de post_max_size à 0
+* Mettre la valeur de upload_max_filesize à 0
+
+##### Mettre à jour les dépendances
+* Se placer dans le répertoire du projet /var/www/html/Fidustream
+* Lancer la commande: 
+    * php [path/to/composer.phar] update
+
+##### Droits sur le dossier var du projet (peut nécessiter d'installer setfacl) (un chmod sur le dossier var marche aussi)
+HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1)
+sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
+sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var
+
+
+#### Bundles
+*Dans Symfony, on peut utiliser des blocs déjà existants: les Bundles.
+Les bundles utilisés par le projet sont:*
+* fos/user-bundle              (gestion avancée des utilisateurs)
+* doctrine/doctrine-bundle     (gestion des entités )
+* doctrine/orm                 (gestion des relations base de donnée/entité)
+* twig/twig                    (moteur de templates)
+* php-amqplib/rabbitmq-bundle  (interaction avec rabbit pour les files de message)
+
+*L'ajout de nouveaux bundles se fait dans le fichier composer.json à la racine du projet. On ajoute la ligne du bundle dans le champ require.  
+Exemple: "doctrine/doctrine-fixtures-bundle": "~2.3",  
+ Le bundle est ensuite autorisé dans le fichier app/config/AppKernel.php. Dans le tableau $bundles.  
+ Exemple: new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),*  
+
+#### Composants symfony
+*Symfony propose des composants déjà existants:*
+* symfony/workflow         (gestion de workflow et de cycle de vie d'une entité)
+* symfony/filesystem       (gestion des fichiers et dossiers du serveur)
+* symfony/event-dispatcher (gestion des évènements pour symfony)
+
+*L'ajout de nouveaux bundles se fait dans le fichier composer.json à la racine du projet. On ajoute la ligne du bundle dans le champ require.  
+Exemple: "symfony/workflow ": "~2.3",*
+
+Pour mettre à jour les dépendances, après ajout dans les fichiers composer.json et app/config/AppKernel.php on utilise la commande update de composer. Pour cela on se place à la racine du projet et on exécute la commande suivante:
+* php [path/to/composer.phar] update
+
+### Manuellement
+Pour faire marcher l'application, il faut installer toutes les dépendances (partie "Dépendances"), télécharger le projet, se placer à la racine et mettre à jour les dépendances avec la commande:
+* php [path/to/composer.phar] update
+
+### Lancer l'application
+Se placer à la racine du projet, ouvrir un terminal et lancer le serveur avec la commande suivante:  
+* php bin/console server:start  
+* Lancer les processus python de conversion vidéo dans différents terminaux (on peut lancer plusieurs fois le même processus en parallèle, la gestion des tâches est gérées):
+    * python transcoding/transcodingReceiver.py (dans notre exemple, on utilisera la commande python3.6 transcoding/transcodingReceiver.py puisqu'on a installé la version 3.6)
+    * python transcoding/resolutionReceiver.py
+    * php bin/console rabbitmq:consumer workflow_consumer
+    * php bin/console rabbitmq:consumer resolution_consumer
+* Lancer le serveur Symfony:
+    * php bin/console server:start
+* Puis se rendre à l'adresse:   
+    * [adresse du serveur][port du serveur]/video
+* Connectez-vous avec l'un des utilisateurs suivant (pour plus de détails sur les droits, voir la section: "Authentification")
+    * login: admin/ password: admin
+    * login: contributor1/ password: contributor1
+    * login: contributor2/ password: contributor2
+    * login: moderator1/ password: moderator1
+    * login: moderator2/ password: moderator2
+    * login: viewer/ password: viewer
