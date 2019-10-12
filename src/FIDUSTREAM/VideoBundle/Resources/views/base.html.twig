@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="http://vjs.zencdn.net/5.9/video-js.css" rel="stylesheet">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <script src="{{ asset('js/script.js') }}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/videojs-resolution-switcher/0.4.2/videojs-resolution-switcher.min.css" />
+
+    <!-- jQuery library -->
+    
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>     
+    <script src="http://vjs.zencdn.net/5.9/video.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-resolution-switcher/0.4.2/videojs-resolution-switcher.min.js"></script>
+    <title>{% block title %}Fidustream{% endblock %}</title>
+</head>
+
+<body style="height:100vh">
+
+<div class="row">
+        <div class="col-lg-2">
+            <header><h1>Fidustream</h1></header>
+        </div>
+        <div class="col-lg-offset-8 col-lg-2">
+            {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+                <span class="glyphicon glyphicon-user">{{ app.user.username }}</span>
+            <a href="{{ path('fos_user_security_logout') }}"><span class="glyphicon glyphicon-log-out"></span> Déconnexion</a>
+                {% else %}
+            <a href="{{ path('fos_user_security_login') }}"><span class="glyphicon glyphicon-log-in"></span>Connexion</a>
+            {% endif %}
+        </div>
+</div>
+<div class="row">
+    <div class="col-lg-2 sidebar">
+            <nav class="navbar navbar-default ">
+                <ul class="nav nav-pills nav-stacked ">
+                    <li>
+                        <a href="{{ path('fidustream_video_search') }}"><span class="glyphicon glyphicon-home"> Home</span></a>
+                    </li>
+                    {% if is_granted('ROLE_CONTRIBUTOR') %}
+                    <li>
+                        <a href="{{ path('fidustream_video_upload') }}"><span class="glyphicon glyphicon-upload"> Upload</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ path('fidustream_video_uploaded') }}"><span class="glyphicon glyphicon-repeat"> En cours</span></a>
+                    </li>
+                    {% endif %}
+                    {% if is_granted('ROLE_MODERATOR') %}
+                    <li>
+                        <a href="{{ path('fidustream_video_moderator') }}"><span class="glyphicon glyphicon-ok-circle"> Validation</span></a>
+                    </li>
+                    {% endif %}
+                    </ul>
+               </nav>
+        </div>
+        <div class="col-lg-10">
+            <section id="content">
+                {% block content %}{% endblock %}
+            </section>
+        </div>
+</div>
+
+<footer>&copy; Fidustream</footer>
+
+
+</body>
+</html>

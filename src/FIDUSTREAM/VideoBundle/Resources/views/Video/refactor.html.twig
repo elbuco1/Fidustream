@@ -1,0 +1,62 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+
+{% block content %}
+ <div class="row">
+        <div class="col-lg-6 ">
+            <div class="row">
+                <h2>Demande de modification de la vidéo:</h2>
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                    <p><b>La vidéo a été soumise à modification pour la raison suivante:</b></p>
+                    <p>{{video.lifecycleMessage}}</p>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <ul class="nav nav-tabs video-refactor">
+                    <li class="active"><a href="#modify">Modifier</a></li>
+                    <li><a href="#cancel">Abandonner</a></li>
+                </ul>
+            </div>
+            <section id="modify" class="refactor-tab tab-content active">
+                <div>
+                    <p>Prenez connaissance du message du modérateur et modifiez les informations concernant la vidéo en accord avec ce dernier.
+                    Vous pourrez alor soumettre à nouveau la vidéo à validation</p>
+                    <form id="refactorForm" action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                        <input type="hidden" name="action" value="resubmit" />
+                        
+                        <b>Nouveau titre:</b><br>
+                        <input type="text" name="title" placeholder="{{ video.title }}" value="{{ video.title }}" /> <br>
+                    
+                        <b>Nouveau niveau d'accréditation:</b><br>
+                        <input type="number" step="1" placeholder="{{ video.authenticationLevel }}" min="1" max="15"> <br>
+                        
+                        <b>Nouvelle description:</b><br>
+                        <textarea rows="6" cols="50" name="description" form="refactorForm" placeholder="{{ video.description }}" >{{ video.description }}</textarea><br>
+                        
+                        <b>Nouveaux tags:</b><br>
+                        <textarea rows="2" cols="50" name="tags" form="refactorForm" placeholder="{{ video.tags }}">{{ video.tags }}</textarea><br>
+                        <input type="submit" value="Modifier" class="btn btn-success" />
+                    </form>
+                </div>
+            </section>
+            <section id="cancel" class="refactor-tab tab-content hide">
+                <div>
+                     <p>Vous pouvez faire le choix de ne pas soumettre à nouveau la vidéo à validation. 
+                     La vidéo sera supprimée définitivement.
+                     </p>
+                    <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                        <input type="hidden" name="action" value="cancel" />
+                        <input type="submit" value="Abandonner" class="btn btn-danger"/>
+                    </form>
+                </div>
+            </section>
+            
+            
+           
+        </div>
+    </div>
+   
+{% endblock %}

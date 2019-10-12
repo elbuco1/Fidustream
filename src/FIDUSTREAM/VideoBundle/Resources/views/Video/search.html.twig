@@ -1,0 +1,85 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+
+{% block content %}
+       
+        <form action="{{ path('fidustream_video_search') }}" method="GET">
+            {% if keyword is defined %}
+                <input id="search" name="search" pattern=".{3,}" value="{{keyword}}"  required title="3 characters minimum"></input>
+            {% else %}
+                <input id="search" name="search" pattern=".{3,}" placeholder="Rechercher"  required title="3 characters minimum"></input>
+            {% endif %}
+            <button type="submit" ><span class="glyphicon glyphicon-search"></span></button>
+        </form>
+        {% if results is defined %}
+            <h2>Résultat de la recherche </h2>
+         
+            {% for video in results %}
+                <div class="img-thumbnail video-display col-lg-4" >
+                <div class="row">
+                    <div class="col-lg-6" >
+                        <a href="{{ path('fidustream_video_player', { 'id': video.id }) }}">
+                            <img class="img-responsive" src="{{ asset(video.getThumbnailAsset) }}" alt="{{video.title}}" />
+                            
+                        </a>
+                    </div>
+                    <div class="col-lg-6" >
+                        <a href="{{ path('fidustream_video_player', { 'id': video.id }) }}">
+                            {{video.title}}
+                        </a>
+                        <div class="row">
+                           <font size="0" color="gray"> 
+                                Le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}
+                            </font>
+                        </div>
+                        <div class="row">
+                            <font size="0" color="gray"> 
+                                Par {{video.contributor.username}}
+                            </font>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-1" ></div>
+                {% else %}
+                    <li>Pas de vidéo trouvée.</li>
+            {% endfor %}
+       
+        {% else %}
+        <h2>Vidéos publiées récemment</h2>
+   
+        {% for video in recent %}
+            <div class="img-thumbnail video-display col-lg-3" >
+                <div class="row">
+                    <div class="col-lg-6" >
+                        <a href="{{ path('fidustream_video_player', { 'id': video.id }) }}">
+                            <img class="img-responsive" src="{{ asset(video.getThumbnailAsset) }}" alt="{{video.title}}" />
+                            
+                        </a>
+                    </div>
+                    <div class="col-lg-6" >
+                        <div class="row">
+                            <a href="{{ path('fidustream_video_player', { 'id': video.id }) }}">
+                                {{video.title}}
+                            </a>
+                        </div>
+                        <div class="row">
+                           <font size="0" color="gray"> 
+                                Le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}
+                            </font>
+                        </div>
+                        <div class="row">
+                            <font size="0" color="gray"> 
+                                Par {{video.contributor.username}}
+                            </font>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-1" ></div>
+                {% else %}
+                    <li>Pas de vidéo trouvée.</li>
+            {% endfor %}
+        
+        {% endif %}
+  {% endblock %}

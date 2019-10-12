@@ -1,0 +1,119 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-5" >
+            {% if not(workflow_has_marked_place(video, 'uploaded') or workflow_has_marked_place(video, 'transcoding') ) %}
+            <video controls class="video-js vjs-big-play-centered" preload="auto" width="640" height="360" poster="{{ asset(video.getThumbnailAsset) }}" data-setup="{}">
+                <source src="{{ asset(video.getMp4Path) }}" type='video/mp4' label='HD'>
+                <source src="{{ asset(video.getWebmPath) }}" type='video/webm' label='HD'>
+            </video>
+            {% endif %}
+            <div class="row">
+                    <h1>{{video.title}}</h1>
+                </div>
+                <div class="row video-display">
+                    {% for tag in tags %}
+                        <div class="label label-primary">{{tag}}</div>
+                    {% endfor %}
+                </div>
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                            <div>Ajoutée le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}</div>
+                            <div>Uploadée par <strong>{{video.contributor.username}}</strong></div>
+                            
+                        {% if workflow_has_marked_place(video, 'published') %}
+                            <div>Validée par <strong>{{video.validator.username}}</strong></div>
+                        {% else %}
+                            <div>En cours de publication</div>
+                        {% endif %}
+                        
+                        <div>Niveau requis: {{video.authenticationLevel}}</div>
+                    </div>
+                </div>
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>{{video.description}}</p>
+                    </div>
+                </div> 
+            
+        </div>
+        <div class="col-lg-1" ></div>
+        <div class="col-lg-4" >    
+            <h2>Processus de conversion:</h2>
+            {% if is_granted('ROLE_CONTRIBUTOR') and (app.user.username == video.contributor.username) %}
+
+
+                {% if workflow_has_marked_place(video, 'uploaded') %}
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>La vidéo vient d'être uploadée, vous pouvez lancer la conversion tout de suite ou revenir
+                            plus tard via l'onglet "En cours" de la barre de navigation.
+                        </p>
+                                            
+                        <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                            <input type="hidden" name="action" value="transcode" />
+                            <input type="submit" value="Lancer la conversion" class="btn btn-success" />
+                        </form>
+                    </div>
+                </div>
+                   
+                {% elseif workflow_has_marked_place(video, 'transcoding_failed') %}
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>La conversion de la vidéo a échoué, voici le message d'erreur associé: {{video.lifecycleMessage}}</p>
+                        <p>Vous pouvez relancer la conversion ou abandonner</p>
+                         <div class="row">
+                            <div class="col-lg-6 " >
+                                <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                                    <input type="hidden" name="action" value="retranscode" />
+                                    <input type="submit" value="Relancer" class="btn btn-success"/>
+                                </form>
+                            </div>
+                            <div class="col-lg-6 ">
+                                <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                                    <input type="hidden" name="action" value="delete" />
+                                    <input type="submit" value="Abandonner" class="btn btn-danger" />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+                {% elseif workflow_has_marked_place(video, 'computing_failed') %}
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>Le calcul des résolutions de la vidéo a échoué, voici le message d'erreur associé: {{video.lifecycleMessage}}</p>
+                        <p>Vous pouvez relancer le calcul ou abandonner</p>
+                        <div class="row">
+                            <div class="col-lg-6 " >
+                                <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                                    <input type="hidden" name="action" value="recompute" />
+                                    <input type="submit" value="Relancer" class="btn btn-success"/>
+                                </form>
+                            </div>
+                            <div class="col-lg-6 " >
+                                <form action="{{ path('fidustream_video_resume' , { 'id': video.id }) }}" method="post"> 
+                                    <input type="hidden" name="action" value="abort" />
+                                    <input type="submit" value="Abandonner" class="btn btn-danger"/>
+                                </form>
+                            </div>
+                    </div>
+                </div>
+                {% elseif workflow_has_marked_place(video, 'refactoring') %}
+                <p>La vidéo vient d'être soumise à nouveau au processus de validation.
+                {% else %}
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>Le processus de conversion a déjà été lancé.</p>
+                        <p>La vidéo est dans l'état: <strong>{{video.currentPlace}}</strong></p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+            </div>
+             <div class="col-lg-1" ></div>
+        </div>
+  {% endblock %}

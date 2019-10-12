@@ -1,0 +1,70 @@
+framework:
+    workflows:
+        video_publishing:
+            type:       'state_machine'
+            marking_store:
+                type:   'single_state'
+                arguments:
+                        - 'currentPlace'
+            supports:
+                - FIDUSTREAM\VideoBundle\Entity\Video
+            places:
+                - uploading
+                - uploaded
+                - transcoding
+                - transcoding_failed
+                - validation
+                - rejected
+                - refactoring
+                - resolutions_computing
+                - computing_failed
+                - published
+                - deleted
+            transitions:
+                upload:
+                    from: uploading
+                    to:   uploaded
+                transcode:
+                    from: uploaded
+                    to:   transcoding
+                retranscode:
+                    from: transcoding_failed
+                    to:   transcoding
+                fail:
+                    from: transcoding
+                    to:   transcoding_failed
+                delete:
+                    from: transcoding_failed
+                    to:   deleted
+                to_validate:
+                    from: transcoding
+                    to:   validation
+                resubmit:
+                    from: refactoring
+                    to:   validation
+                reject:
+                    from: validation
+                    to:   rejected
+                refactor:
+                    from: validation
+                    to:   refactoring
+                cancel:
+                    from: refactoring
+                    to:   deleted
+                accept:
+                    from: validation
+                    to:   resolutions_computing
+                computing_fail:
+                    from: resolutions_computing
+                    to:   computing_failed
+                recompute:
+                    from: computing_failed
+                    to:   resolutions_computing
+                abort:
+                    from: computing_failed
+                    to:   deleted
+                publish:
+                    from: resolutions_computing
+                    to:   published
+                
+                

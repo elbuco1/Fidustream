@@ -1,0 +1,36 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-6 ">
+            <h2>Uploader une video</h2>
+            <div class="form">
+                {{ form_start(form) }}
+                    {{ form_label(form.file,'Vidéo') }}
+                    {{ form_errors(form.file) }}
+                    {{ form_widget(form.file) }}
+
+                    {{ form_label(form.title,'Titre') }}
+                    {{ form_errors(form.title) }}
+                    {{ form_widget(form.title) }}
+
+                    {{ form_label(form.description,'Description') }}
+                    {{ form_errors(form.description) }}
+                    {{ form_widget(form.description) }}
+
+                    {{ form_label(form.tags,'Tags (Entrez vos tags en les séparant par des virgules, pas par des espaces)') }}
+                    {{ form_errors(form.tags) }}
+                    {{ form_widget(form.tags) }}
+                
+                    {{ form_label(form.authenticationLevel,'Niveau d\'accès requis') }}
+                    {{ form_errors(form.authenticationLevel) }}
+                    {{ form_widget(form.authenticationLevel) }}
+                    <br>
+                {{ form_end(form) }}
+                
+            </div>
+        </div>
+    </div>
+   
+{% endblock %}

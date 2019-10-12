@@ -1,0 +1,42 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-6" >
+            <div class="row">
+                <h2>La vidéo suivante a été rejetée: </h2>
+            </div>
+            <div class="row">
+                <h1>{{video.title}}</h1>
+            </div>
+            <div class="row video-display">
+                {% for tag in tags %}
+                    <div class="label label-primary">{{tag}}</div>
+                {% endfor %}
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                        <div>Ajoutée le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}</div>
+                        <div>Uploadée par <strong>{{video.contributor.username}}</strong></div>
+                        
+                    
+                    
+                    <div>Niveau requis: {{video.authenticationLevel}}</div>
+                </div>
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                    <p>{{video.description}}</p>
+                </div>
+            </div>  
+            <div class="row">
+                <h2>Le modérateur a rejeté la vidéo pour la raison suivante: </h2>
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                    <p>{{video.lifecycleMessage}}</p>
+                </div>
+            </div>
+        
+    </div>
+</div>    
+{% endblock %}

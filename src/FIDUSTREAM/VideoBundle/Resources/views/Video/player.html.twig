@@ -1,0 +1,159 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+{% block content %}
+      {% if workflow_has_marked_place(video, 'rejected') %}
+      <div class="row">
+       
+        <div class="col-lg-6">
+            <div class="row">
+                <h1>{{video.title}}</h1>
+            </div>
+            <div class="row video-display">
+                {% for tag in tags %}
+                    <div class="label label-primary">{{tag}}</div>
+                {% endfor %}
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                        <div>Ajoutée le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}</div>
+                        <div>Uploadée par <strong>{{video.contributor.username}}</strong></div>
+                        
+                    
+                        <div>Rejetée par <strong>{{video.validator.username}}</strong></div>
+                    
+                    
+                    <div>Niveau requis: {{video.authenticationLevel}}</div>
+                </div>
+            </div>
+            <div class="row video-display">
+                <div class="col-lg-12 img-thumbnail " >
+                    <p>{{video.description}}</p>
+                </div>
+            </div> 
+            <div class="row video-display">
+            <div class="col-lg-12 img-thumbnail " >
+                <b>La vidéo a été rejetée pour la raison suivante:</b>
+                <p>{{video.lifecycleMessage}}</p>
+            </div>
+        </div> 
+        </div>
+         
+      </div>
+      {% else %}
+        <div class="row">
+            <div class="col-lg-6" >
+                <video id="player" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="{{ asset(video.getThumbnailAsset) }}" data-setup="{}">
+                    <source src="{{ asset(video.getMp4Path) }}" type='video/mp4' label='HD'>
+                    <source src="{{ asset(video.getWebmPath) }}" type='video/webm' label='HD'>
+                    {% for res in resolutions %}
+                        <source src="{{ asset(video.getMp4Path( res)) }}" type='video/mp4' label={{res}}>
+                        <source src="{{ asset(video.getWebmPath(res)) }}" type='video/webm' label={{res}}>
+                    {% endfor %}
+                    <p class="vjs-no-js">
+                        To view this video please enable JavaScript, and consider upgrading to a web browser that
+                    </p>
+                </video>
+
+                <script>
+                    videojs('player').videoJsResolutionSwitcher();
+                </script>
+                <div class="row">
+                    <h1>{{video.title}}</h1>
+                </div>
+                <div class="row video-display">
+                    {% for tag in tags %}
+                        <div class="label label-primary">{{tag}}</div>
+                    {% endfor %}
+                </div>
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                            <div>Ajoutée le {{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}</div>
+                            <div>Uploadée par <strong>{{video.contributor.username}}</strong></div>
+                            
+                        {% if workflow_has_marked_place(video, 'published') %}
+                            <div>Validée par <strong>{{video.validator.username}}</strong></div>
+                        {% else %}
+                            <div>En cours de publication</div>
+                        {% endif %}
+                        
+                        <div>Niveau requis: {{video.authenticationLevel}}</div>
+                    </div>
+                </div>
+                <div class="row video-display">
+                    <div class="col-lg-12 img-thumbnail " >
+                        <p>{{video.description}}</p>
+                    </div>
+                </div>  
+            </div> 
+            
+            <div class="col-lg-1" >
+            </div>
+            
+                {% if is_granted('ROLE_MODERATOR') and (app.user.username == video.validator.username) %}
+                {% if workflow_has_marked_place(video, 'validation') %}
+                <div class="col-lg-4 thumbnail" >
+                <h2>Validation de la vidéo</h2>
+                <p>En tant que modérateur, vous pouvez choisir de valider, de demander un changement ou de rejeter définitivement la publication de cette vidéo.</p>
+
+                <ul class="nav nav-tabs video-validation">
+                    <li class="active"><a href="#validate">Valider</a></li>
+                    <li><a href="#refactor">Demander une modification</a></li>
+                    <li><a href="#reject">Rejeter</a></li>
+                </ul>
+                    <section id="validate" class="validation-tab tab-content active">
+                        <div>
+                            <p>Si vous jugez que le contenu soumis est conforme aux valeurs de l'entreprise, vous pouvez choisir de valider
+                            la vidéo. Cela aura pour conséquence de la rendre disponible à la consultation par les utilisateurs autorisés.
+                            </p>
+                            <form action="{{ path('fidustream_video_player' , { 'id': video.id }) }}" method="post"> 
+                                <input type="hidden" name="action" value="accept" />
+                                <input type="submit" value="Valider" class="btn btn-success"/>
+                            </form>
+                        </div>
+                    </section>
+                    <section id="refactor" class="validation-tab tab-content hide">
+                        <div>
+                            <p>
+                                Si vous jugez que les informations fournies avec la vidéo sont incorrectes, demandez au contributeur d'y remédier.
+                            </p>
+                            <p><strong>Indiquez au contributeur les modifications à faire pour que la vidéo soit validée:</strong></p>
+                            <form id="modificationForm" action="{{ path('fidustream_video_player' , { 'id': video.id }) }}" method="post"> 
+                                <input type="hidden" name="action" value="modify" />
+                                <textarea rows="6" cols="50" name="message" form="modificationForm"></textarea><br>
+                                <input type="submit" value="Modifier" class="btn btn-info"/>
+                            </form>
+                        </div>
+                    </section>
+                    <section id="reject" class="validation-tab tab-content hide">
+                        <div>
+                            <p>Si vous jugez que la vidéo est non conforme aux valeurs de l'entreprise, vous pouvez rejeter définitivement la vidéo.
+                                Le contributeur en sera notifié et la vidéo sera supprimée.
+                            </p>
+                            <p><strong>Indiquez au contributeur la raison du rejet de la vidéo:</strong></p>
+                            <form id="validationForm" action="{{ path('fidustream_video_player' , { 'id': video.id }) }}" method="post"> 
+                                <input type="hidden" name="action" value="reject" />
+                                
+                                <textarea rows="6" cols="50" name="message" form="validationForm"></textarea><br>
+                                <input type="submit" value="Rejeter" class="btn btn-danger" />
+                            </form>
+                        </div>
+                    </section>
+                    
+                    
+                {% endif %}
+            {% endif %}
+            </div>
+        {% endif %}
+            
+            <div class="col-lg-1" >
+            </div>
+        </div>
+      
+            
+  {% endblock %}
+
+
+
+
+
+                    

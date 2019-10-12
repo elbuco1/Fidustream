@@ -1,0 +1,11 @@
+.video-display{
+    margin-top: 10px;  
+}
+
+.tab-content.hide{
+    display: none;
+}
+
+.tab-content.active{
+    display: block;
+}

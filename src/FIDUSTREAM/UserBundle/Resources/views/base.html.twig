@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <link rel="stylesheet" href="/media/css/style.css" /> <!-- Pas bien (static )-->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+   
+    <link href="http://vjs.zencdn.net/6.1.0/video-js.css" rel="stylesheet">
+    <title>{% block title %}Fidustream{% endblock %}</title>
+</head>
+<body>
+<header>{% block header %}{% endblock %}</header>
+    <nav>
+       {% block nav %}
+       {% endblock %}
+   </nav>
+   <section id="content">
+       {% block content %}{% endblock %}
+   </section>
+<footer>{% block footer %}&copy; Fidustream{% endblock %}</footer>
+</body>
+</html>

@@ -1,0 +1,40 @@
+fidustream_video_player:
+    path:    /player/{id}
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:player }
+    requirements:
+        id:    \d+
+
+fidustream_video_upload:
+    path:    /upload
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:upload }
+
+fidustream_video_search:
+    path:    /
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:search }
+
+fidustream_video_moderator:
+    path:    /moderator
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:moderator }
+
+fidustream_video_uploaded:
+    path:    /uploaded
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:uploaded }
+
+fidustream_video_resume:
+    path:   /resume/{id}
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:resume }
+    requirements:
+        id:    \d+
+
+fidustream_video_rejected:
+    path:   /rejected/{id}
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:rejected }
+    requirements:
+        id:    \d+
+fidustream_video_refactor:
+    path:   /refactor/{id}
+    defaults: { _controller: FIDUSTREAMVideoBundle:Video:refactor }
+    requirements:
+        id:    \d+
+
+

@@ -1,0 +1,69 @@
+{% extends "FIDUSTREAMVideoBundle::base.html.twig" %}
+
+{% block content %}
+<div class="row">
+<div class="col-lg-11" >
+    <h2>Vidéos en cours de traitement</h2>
+    <table class="table table-striped table-hover table-responsive">
+        <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Date de contribution</th>
+            <th>Statut</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        
+        
+        
+    
+            {% for video in results %}
+                <tr>
+                    <td>{{ video.title }}</td>
+                    <td>{{video.uploadDate|date('d/m/Y')}} à {{video.uploadDate|date('H')}}h{{video.uploadDate|date('i')}}</td>
+                    <td>{{ video.currentPlace}}</td>
+                
+            
+                    <td>
+                        {% if workflow_has_marked_place(video, 'transcoding_failed') %}
+                            <a href="{{ path('fidustream_video_resume', { 'id': video.id }) }}">
+                                Réessayer
+                            </a>
+                        {% elseif workflow_has_marked_place(video, 'computing_failed') %}
+                            <a href="{{ path('fidustream_video_resume', { 'id': video.id }) }}">
+                                Réessayer
+                            </a>
+                        {% elseif workflow_has_marked_place(video, 'rejected') %}
+                            <a href="{{ path('fidustream_video_rejected', { 'id': video.id }) }}">
+                                Voir la notification
+                            </a>
+                        {% elseif workflow_has_marked_place(video, 'refactoring') %}
+                            <a href="{{ path('fidustream_video_refactor', { 'id': video.id }) }}">
+                                Modifier/Abandonner la soumission
+                            </a>
+                        {% elseif workflow_has_marked_place(video, 'published') %}
+                            <a href="{{ path('fidustream_video_player', { 'id': video.id }) }}">
+                                Voir la vidéo
+                            </a>
+                        {% else %}
+                            <a href="{{ path('fidustream_video_resume', { 'id': video.id }) }}">
+                                {% if workflow_has_marked_place(video, 'uploaded') %}
+                                    Convertir
+                                {% else %}
+                                    Resumé
+                                {% endif %}
+                            </a>
+                        {% endif %}
+                    </b>
+            </td>
+                {% else %}
+                    <li>Pas de vidéo en cours de traitement.</li>
+            {% endfor %}
+                </tbody>
+        </table>
+    </div>
+    <div class="col-lg-1" ></div>
+</div>
+   
+{% endblock %}
